@@ -75,7 +75,7 @@ container.appendChild(card);
 
 // ==================== EDIT IMAGE ====================
 function changeImage(name){
-const url = prompt(`Enter new image URL for ${name}:`);
+const url = prompt(`copy new image for ${name}:`);
 if(url){
 const p = products.find(p=>p.name===name);
 p.image=url;
