@@ -75,10 +75,10 @@ container.appendChild(card);
 
 // ==================== EDIT IMAGE ====================
 function changeImage(name){
-const url = prompt(`copy new image for ${name}:`);
-if(url){
+const copy = prompt(`copy new image for ${name}:`);
+if(copy){
 const p = products.find(p=>p.name===name);
-p.image=url;
+p.image=copy;
 displayProducts(products);
 }
 }
