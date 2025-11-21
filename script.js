@@ -52,7 +52,7 @@ const componentPrices = {
 // ==================== PRODUCTS ====================
 const products = uniqueComponents.map(name=>{
 const price = componentPrices[name] || 50;
-const image = `https://via.placeholder.com/150?text=${encodeURIComponent(name)}`;
+const image = `images/${name}.jpg`;
 return {name, price, image};
 });
 
