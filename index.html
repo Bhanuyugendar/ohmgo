@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OhmGo - Electronics Components</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <h1>OhmGo</h1>
+  <nav>
+    <ul>
+      <li><a href="#products">Products</a></li>
+      <li><a href="#cart">Cart (<span id="cart-count">0</span>)</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section id="products">
+    <h2>Products</h2>
+    <input type="text" id="search" placeholder="Search Products...">
+    <div id="product-container" class="product-container"></div>
+  </section>
+
+  <section id="cart">
+    <h2>Cart</h2>
+    <div id="cart-items"><p>Your cart is empty.</p></div>
+    <p id="total-price"></p>
+    <button id="continue-btn" style="display:none;" onclick="showWhatsAppCheckout()">Continue</button>
+    <div id="whatsapp-checkout" style="display:none;">
+      <button onclick="checkoutWhatsApp()">Checkout via WhatsApp</button>
+    </div>
+  </section>
+
+  <section id="contact">
+    <h2>Contact Us</h2>
+    <p>Email: <a href="mailto:ohmgoelectronics@gmail.com">ohmgoelectronics@gmail.com</a></p>
+    <p>Instagram: <a href="https://www.instagram.com/ohmgo.in" target="_blank">@ohmgo.in</a></p>
+    <p>WhatsApp: <a href="https://wa.me/919010532390" target="_blank">+91 9010532390</a></p>
+  </section>
+</main>
+
+<footer>
+  <p>&copy; 2025 OhmGo. All rights reserved.</p>
+</footer>
+
+<button id="backToTopBtn" title="Go to top">↑ Top</button>
+
+<script src="script.js"></script>
+</body>
+</html>
