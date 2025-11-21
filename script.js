@@ -1,24 +1,9 @@
-// ==================== DEFAULT DATA ====================
-const defaultComponents = [
-  "Arduino UNO R3", "Arduino Mega 2560", "Arduino Nano",
-  "ESP32 Dev Board", "Raspberry Pi 4 Model B"
-];
-
-const componentPrices = {
-  "Arduino UNO R3": 575,
-  "Arduino Mega 2560": 950,
-  "Arduino Nano": 250,
-  "ESP32 Dev Board": 350,
-  "Raspberry Pi 4 Model B": 4899
-};
-
-// ==================== LOAD PRODUCTS FROM LOCALSTORAGE ====================
-let products = JSON.parse(localStorage.getItem("productsData")) ||
-  defaultComponents.map(name => ({
-    name,
-    price: componentPrices[name] ?? 50,
-    image: `https://via.placeholder.com/150?text=${encodeURIComponent(name)}`
-  }));
+// ==================== LOAD SAVED PRODUCTS OR DEFAULT ====================
+let products = JSON.parse(localStorage.getItem("productsData")) || uniqueComponents.map(name => {
+  const price = componentPrices[name] || 50;
+  const image = `https://via.placeholder.com/150?text=${encodeURIComponent(name)}`;
+  return { name, price, image };
+});
 
 function saveProducts() {
   localStorage.setItem("productsData", JSON.stringify(products));
@@ -39,23 +24,27 @@ function adminLogin() {
 }
 
 // ==================== DISPLAY PRODUCTS ====================
+const initialDisplayCount = 30;
+
 function displayProducts(list) {
   const container = document.getElementById("product-container");
   container.innerHTML = "";
 
-  list.forEach(product => {
+  const toShow = list.slice(0, initialDisplayCount);
+
+  toShow.forEach(product => {
     const card = document.createElement("div");
     card.className = "product-card";
 
     card.innerHTML = `
       <img src="${product.image}" alt="${product.name}">
       <h3>${product.name}</h3>
-      <p>₹${product.price}</p>
+      <p>Price: ₹${product.price}</p>
       <button onclick="addToCart('${product.name}')">Add to Cart</button>
+
       ${isAdmin ? `
-        <button onclick="changeImageByUrl('${product.name}')">Change URL</button>
         <button onclick="triggerFileUpload('${product.name}')">Upload Image</button>
-        <input type="file" accept="image/*" style="display:none" id="fileUpload-${product.name}">
+        <input type="file" id="fileUpload-${product.name}" accept="image/*" style="display:none;">
       ` : ""}
     `;
 
@@ -63,55 +52,109 @@ function displayProducts(list) {
   });
 }
 
-// ==================== CHANGE IMAGE BY URL (ADMIN) ====================
-function changeImageByUrl(name) {
-  if (!isAdmin) return;
-
-  const newUrl = prompt(`Enter new image URL for ${name}:`);
-  if (!newUrl) return;
-
-  const p = products.find(x => x.name === name);
-  p.image = newUrl;
-
-  saveProducts();
-  displayProducts(products);
-}
-
-// ==================== UPLOAD IMAGE FILE (ADMIN) ====================
+// ==================== FILE UPLOAD FOR IMAGE (ADMIN) ====================
 function triggerFileUpload(name) {
   if (!isAdmin) return;
 
   const input = document.getElementById(`fileUpload-${name}`);
-  input.onchange = () => handleFileUpload(name, input.files[0]);
+  input.onchange = () => uploadImageFile(name, input.files[0]);
   input.click();
 }
 
-// Convert uploaded image to Base64
-function handleFileUpload(name, file) {
+function uploadImageFile(name, file) {
   if (!file || !file.type.startsWith("image/")) {
     alert("Please select a valid image file.");
     return;
   }
 
   const reader = new FileReader();
-  reader.onload = function (e) {
+  reader.onload = (e) => {
     const base64Image = e.target.result;
 
-    const p = products.find(x => x.name === name);
+    const p = products.find(p => p.name === name);
     p.image = base64Image;
 
     saveProducts();
     displayProducts(products);
   };
+
   reader.readAsDataURL(file);
 }
 
-// ==================== ADD NEW PRODUCT (ADMIN) ====================
-function addNewProduct() {
-  if (!isAdmin) {
-    alert("Only admin can add products!");
+// ==================== CART ====================
+let cart = [];
+
+function addToCart(name) {
+  const p = products.find(p => p.name === name);
+  cart.push(p);
+  updateCart();
+}
+
+function removeFromCart(i) {
+  cart.splice(i, 1);
+  updateCart();
+}
+
+function updateCart() {
+  const container = document.getElementById("cart-items");
+  const totalEl = document.getElementById("total-price");
+  container.innerHTML = "";
+
+  if (cart.length === 0) {
+    container.innerHTML = "<p>Your cart is empty.</p>";
+    totalEl.textContent = "";
+    document.getElementById("continue-btn").style.display = "none";
+    document.getElementById("cart-count").textContent = 0;
     return;
   }
 
-  const name = document.getElementById("newProductName").value.trim();
-  const price = parseFloat(document.getEle
+  let total = 0;
+
+  cart.forEach((item, i) => {
+    total += item.price;
+    const div = document.createElement("div");
+    div.className = "cart-item";
+    div.innerHTML = `
+      <span>${item.name} - ₹${item.price}</span>
+      <button onclick="removeFromCart(${i})">Remove</button>
+    `;
+    container.appendChild(div);
+  });
+
+  totalEl.textContent = `Total: ₹${total}`;
+  document.getElementById("continue-btn").style.display = "block";
+  document.getElementById("cart-count").textContent = cart.length;
+}
+
+// ==================== WHATSAPP CHECKOUT ====================
+function showWhatsAppCheckout() {
+  document.getElementById("whatsapp-checkout").style.display = "block";
+}
+
+function checkoutWhatsApp() {
+  if (cart.length === 0) return;
+
+  let msg = "Hello, I want to buy these items:\n";
+  cart.forEach(item => msg += `- ${item.name} : ₹${item.price}\n`);
+  msg += `Total: ₹${cart.reduce((a, b) => a + b.price, 0)}`;
+
+  window.open(`https://wa.me/919010532390?text=${encodeURIComponent(msg)}`, "_blank");
+}
+
+// ==================== SEARCH ====================
+document.getElementById("search").addEventListener("input", function () {
+  const val = this.value.toLowerCase();
+  const filtered = products.filter(p => p.name.toLowerCase().includes(val));
+  displayProducts(filtered.length ? filtered : products);
+});
+
+// ==================== BACK TO TOP ====================
+const topBtn = document.getElementById("backToTopBtn");
+window.onscroll = () => {
+  topBtn.style.display = (document.documentElement.scrollTop > 200) ? "block" : "none";
+};
+topBtn.addEventListener("click", () => window.scrollTo({ top: 0, behavior: "smooth" }));
+
+// ==================== INITIAL LOAD ====================
+displayProducts(products);
+updateCart();
