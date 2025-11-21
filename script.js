@@ -74,14 +74,15 @@ container.appendChild(card);
 }
 
 // ==================== EDIT IMAGE ====================
-function changeImage(name){
-const copy = prompt(`copy new image for ${name}:`);
-if(copy){
-const p = products.find(p=>p.name===name);
-p.image=copy;
-displayProducts(products);
-}
-}
+function triggerFileUpload(name) {
+  const input = document.getElementById(`fileUpload-${name}`);
+  if (!input) return;
+  
+  input.onchange = () => {
+    const file = input.files[0];
+    if (file) handleFileReplace(name, file);
+  };
+  input.click();
 
 // ==================== CART ====================
 let cart=[];
